@@ -4,8 +4,11 @@ import {
     validatorCompiler,
     serializerCompiler,
     ZodTypeProvider,
+    jsonSchemaTransform,
 } from 'fastify-type-provider-zod';
-import { z } from 'zod';
+import { fastifySwagger } from '@fastify/swagger';
+import { fastifySwaggerUi } from '@fastify/swagger-ui';
+import { subscribeToEventRoute } from './routes/subscribe-to-event-route';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>(); // Enable Zod type provider
 
@@ -14,21 +17,26 @@ app.register(fastifyCors) // Enable CORS for all routes
 app.setValidatorCompiler(validatorCompiler); // Enable Zod validation
 app.setSerializerCompiler(serializerCompiler); // Enable Zod serialization
 
-app.post('/subscriptions', { // Define a route with validation and serialization
-    schema: {
-        body: z.object({
-            name: z.string(),
-            email: z.string().email(),
-        }),
+// Enable Swagger documentation
+app.register(fastifySwagger, {
+    openapi: {
+        info: {
+            title: 'NLW-Connect',
+            version: '0.0.1',
+        },
     },
-}, (request, reply) => {
-    const { name, email } = request.body; // Get the validated and serialized data from the request
+    transform: jsonSchemaTransform,
+});
 
-    // Do something with the data, like saving it to a database
+// Enable Swagger UI
+app.register(fastifySwaggerUi, {
+    routePrefix: '/docs',
+}); 
 
-    return reply.send(201).send({ name, email }); // Send the data back to the client as a response
-})
+// Register routes
+app.register(subscribeToEventRoute);
 
-app.listen({ port:3333 }).then(() => { // Start the server
+// Start the server
+app.listen({ port:3333 }).then(() => {
     console.log('HTTP server running!');
 });
