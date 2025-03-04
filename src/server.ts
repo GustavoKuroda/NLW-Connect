@@ -9,6 +9,7 @@ import {
 import { fastifySwagger } from '@fastify/swagger';
 import { fastifySwaggerUi } from '@fastify/swagger-ui';
 import { subscribeToEventRoute } from './routes/subscribe-to-event-route';
+import { env } from './env';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>(); // Enable Zod type provider
 
@@ -37,6 +38,6 @@ app.register(fastifySwaggerUi, {
 app.register(subscribeToEventRoute);
 
 // Start the server
-app.listen({ port:3333 }).then(() => {
+app.listen({ port: env.PORT }).then(() => { // Use the PORT value from env.ts
     console.log('HTTP server running!');
 });
